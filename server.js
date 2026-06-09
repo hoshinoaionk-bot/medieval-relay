@@ -14,10 +14,10 @@ wss.on('connection', (ws) => {
             const msg = JSON.parse(data)
             if (msg.type === 'host') {
                 const code = String(Math.floor(10 + Math.random() * 90))
-                rooms[code] = { host: ws, clients: [] }
+                rooms[code] = { host: ws, clients: [], hostIp: msg.ip || '127.0.0.1' }
                 currentRoom = code
                 ws.send(JSON.stringify({ type: 'hosted', code: code }))
-                console.log('Room created: ' + code)
+                console.log('Room created: ' + code + ' IP: ' + (msg.ip || '127.0.0.1'))
             }
             else if (msg.type === 'join') {
                 const room = rooms[msg.code]
@@ -27,7 +27,7 @@ wss.on('connection', (ws) => {
                 }
                 currentRoom = msg.code
                 room.clients.push(ws)
-                ws.send(JSON.stringify({ type: 'joined', hostIp: 'relay' }))
+                ws.send(JSON.stringify({ type: 'joined', hostIp: room.hostIp }))
                 room.host.send(JSON.stringify({ type: 'player_joined' }))
                 console.log('Player joined room: ' + msg.code)
             }
